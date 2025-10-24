@@ -15,7 +15,7 @@ El centro usaba un sistema manual (hojas de cálculo) que causaba 3 problemas pr
 
 La competencia del curso pedía usar estructuras de datos lineales. La estrategia elegida fue:
 
-* **Dos Colas:** `<Estudiante> Cola_Prioritaria` y `<Estudiante> Cola_Regular`.
+* **Dos Colas:** `Cola<Estudiante> Cola_Prioritaria` y `Cola<Estudiante> Cola_Regular`.
     * **Justificación:** Se eligieron colas por su naturaleza **FIFO (First-In, First-Out)**, lo que garantiza el orden de llegada justo. Usar dos colas permite gestionar el requisito de "prioridad" de forma eficiente: el sistema siempre atiende la cola prioritaria primero.
 
 * **Una Lista (List):** `List<Estudiante> Lista_Historial`.
