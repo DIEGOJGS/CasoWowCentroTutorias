@@ -42,13 +42,16 @@ namespace CasoWowCentroTutorias
                         RegistrarNuevoEstudiante(gestor);
                         break;
                     case "2":
-                        gestor.AtenderSiguienteEstudiante();
+                        // ¡¡CAMBIO AQUÍ!!
+                        // Ahora capturamos el 'string' que devuelve el método
+                        string mensaje = gestor.AtenderSiguienteEstudiante();
+                        Console.WriteLine(mensaje); // Y lo imprimimos
                         break;
                     case "3":
-                        gestor.VerPendientes();
+                        gestor.VerPendientes(); // Esta línea da error si el método no existe
                         break;
                     case "4":
-                        gestor.VerHistorial();
+                        gestor.VerHistorial(); // Esta línea da error si el método no existe
                         break;
                     case "5":
                         salir = true;

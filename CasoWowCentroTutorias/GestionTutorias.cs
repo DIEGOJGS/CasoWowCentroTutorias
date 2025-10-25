@@ -1,122 +1,124 @@
 ﻿using System;
-using System.Collections.Generic; // ¡Muy importante! Esto nos da acceso a Queue<> y List<>
+using System.Collections.Generic;
+using System.Linq; // ¡¡Importante!! Necesario para consultas a la BD
 
 namespace CasoWowCentroTutorias
 {
     public class GestionTutorias
     {
-        // --- ESTRUCTURAS DE DATOS ---
-        // Aquí creamos las 2 Colas y 1 Lista que planeamos.
-        // Usamos <Estudiante> para decirle a C# que solo guardaremos objetos de esa clase.
+        // 'public' para que el Formulario Visual las vea
+        public Queue<Estudiante> Cola_Prioritaria;
+        public Queue<Estudiante> Cola_Regular;
+        public List<Estudiante> Lista_Historial;
 
-        private Queue<Estudiante> Cola_Prioritaria;
-        private Queue<Estudiante> Cola_Regular;
-        private List<Estudiante> Lista_Historial;
+        // --- NUEVA PROPIEDAD PARA LA BD ---
+        private TutoriasDbContext dbContext; // Nuestro "puente" a la BD
 
-        // "Constructor": Esto se ejecuta automáticamente cuando creamos la GestionTutorias
+
         public GestionTutorias()
         {
-            // Inicializamos nuestras estructuras para que estén listas para usarse
+            // Inicializamos las estructuras en memoria
             Cola_Prioritaria = new Queue<Estudiante>();
             Cola_Regular = new Queue<Estudiante>();
             Lista_Historial = new List<Estudiante>();
+
+            // --- CÓDIGO NUEVO DE BD ---
+            // 1. Inicializamos el puente
+            dbContext = new TutoriasDbContext();
+
+            // 2. Asegura que el archivo (ej: tutorias.db) y las tablas existan.
+            //    Si no existen, los crea.
+            dbContext.Database.EnsureCreated();
+
+            // 3. ¡¡La "magia"!! Cargamos los estudiantes pendientes
+            CargarPendientesDesdeBD();
         }
 
-        // --- OPERACIONES (Métodos de la aplicación) ---
+        // --- NUEVO MÉTODO PRIVADO ---
+        private void CargarPendientesDesdeBD()
+        {
+            // Busca en la tabla "Estudiantes" todos los que tengan Status "En Espera"
+            var pendientes = dbContext.Estudiantes
+                                      .Where(e => e.Status == "En Espera")
+                                      .OrderBy(e => e.HoraLlegada) // Los ordena por hora
+                                      .ToList(); // Los trae a memoria
 
-        // 1. Función para registrar un nuevo estudiante
+            foreach (var est in pendientes)
+            {
+                // Los re-encola en las listas en memoria
+                if (est.TipoSolicitud == "prioritaria")
+                {
+                    Cola_Prioritaria.Enqueue(est);
+                }
+                else
+                {
+                    Cola_Regular.Enqueue(est);
+                }
+            }
+        }
+
+
+        // 1. Función para registrar (¡¡MODIFICADA!!)
         public void RegistrarEstudiante(string nombre, string asignatura, string tipoSolicitud)
         {
-            // Creamos el nuevo estudiante usando la clase Estudiante.cs que hicimos antes
+            // 1. Creamos el estudiante (esto ya pone el Status en "En Espera")
             Estudiante nuevoEstudiante = new Estudiante(nombre, asignatura, tipoSolicitud);
 
-            // Decidimos a qué cola va
+            // 2. Lo agregamos a la cola en MEMORIA
             if (tipoSolicitud == "prioritaria")
             {
-                Cola_Prioritaria.Enqueue(nuevoEstudiante); // Enqueue = Encolar
-                Console.WriteLine($"\n-> ESTUDIANTE: {nombre} registrado en cola PRIORITARIA.");
+                Cola_Prioritaria.Enqueue(nuevoEstudiante);
             }
             else
             {
                 Cola_Regular.Enqueue(nuevoEstudiante);
-                Console.WriteLine($"\n-> ESTUDIANTE: {nombre} registrado en cola REGULAR.");
             }
+
+            // 3. ¡¡NUEVO!! Lo guardamos en la BASE DE DATOS
+            dbContext.Estudiantes.Add(nuevoEstudiante);
+            dbContext.SaveChanges(); // Confirma los cambios en el archivo .db
         }
 
-        // 2. Función para llamar al siguiente estudiante a ser atendido
-        public void AtenderSiguienteEstudiante()
+        // 2. Función para atender (¡¡MODIFICADA!!)
+        public string AtenderSiguienteEstudiante()
         {
             Estudiante estudianteAtendido = null;
+            string mensaje = "";
 
-            // 1. Revisamos siempre la cola prioritaria primero
-            if (Cola_Prioritaria.Count > 0) // Count es como preguntar "cuántos hay"
+            if (Cola_Prioritaria.Count > 0)
             {
-                estudianteAtendido = Cola_Prioritaria.Dequeue(); // Dequeue = Desencolar
-                Console.WriteLine($"\n*** LLAMANDO (Prioridad): {estudianteAtendido.Nombre} para {estudianteAtendido.Asignatura} ***");
+                estudianteAtendido = Cola_Prioritaria.Dequeue(); // Sale de la cola en MEMORIA
+                mensaje = $"*** LLAMANDO (Prioridad): {estudianteAtendido.Nombre} para {estudianteAtendido.Asignatura} ***";
             }
-            // 2. Si la prioritaria está vacía, revisamos la regular
             else if (Cola_Regular.Count > 0)
             {
-                estudianteAtendido = Cola_Regular.Dequeue();
-                Console.WriteLine($"\n*** LLAMANDO (Regular): {estudianteAtendido.Nombre} para {estudianteAtendido.Asignatura} ***");
+                estudianteAtendido = Cola_Regular.Dequeue(); // Sale de la cola en MEMORIA
+                mensaje = $"*** LLAMANDO (Regular): {estudianteAtendido.Nombre} para {estudianteAtendido.Asignatura} ***";
             }
-            // 3. Si ambas están vacías
             else
             {
-                Console.WriteLine("\n-> No hay estudiantes en espera.");
-                return; // Termina la función aquí
+                mensaje = "-> No hay estudiantes en espera.";
+                return mensaje;
             }
 
-            // 4. Agregamos al historial consolidado
+            // Agregamos al historial en MEMORIA
             Lista_Historial.Add(estudianteAtendido);
+
+            // --- ¡¡NUEVO!! Actualizamos la BD ---
+            // 1. Cambiamos el status del estudiante
+            estudianteAtendido.Status = "Atendido";
+
+            // 2. Le decimos a EF Core que este estudiante fue modificado
+            dbContext.Estudiantes.Update(estudianteAtendido);
+
+            // 3. Guardamos los cambios en el archivo .db
+            dbContext.SaveChanges();
+
+            return mensaje;
         }
 
-        // 3. Función para ver quiénes están en espera
-        public void VerPendientes()
-        {
-            Console.WriteLine("\n--- PENDIENTES PRIORITARIOS ---");
-            if (Cola_Prioritaria.Count == 0)
-            {
-                Console.WriteLine("(Vacía)");
-            }
-            else
-            {
-                // Imprime cada estudiante en la cola
-                foreach (Estudiante est in Cola_Prioritaria)
-                {
-                    Console.WriteLine($"- {est.Nombre} ({est.Asignatura}) | Llegó a las {est.HoraLlegada.ToShortTimeString()}");
-                }
-            }
-
-            Console.WriteLine("\n--- PENDIENTES REGULARES ---");
-            if (Cola_Regular.Count == 0)
-            {
-                Console.WriteLine("(Vacía)");
-            }
-            else
-            {
-                foreach (Estudiante est in Cola_Regular)
-                {
-                    Console.WriteLine($"- {est.Nombre} ({est.Asignatura}) | Llegó a las {est.HoraLlegada.ToShortTimeString()}");
-                }
-            }
-        }
-
-        // 4. Función para ver el historial del día
-        public void VerHistorial()
-        {
-            Console.WriteLine("\n--- HISTORIAL DE ATENDIDOS HOY ---");
-            if (Lista_Historial.Count == 0)
-            {
-                Console.WriteLine("(Sin atenciones registradas)");
-            }
-            else
-            {
-                foreach (Estudiante est in Lista_Historial)
-                {
-                    Console.WriteLine($"- {est.Nombre} ({est.Asignatura}) | Tipo: {est.TipoSolicitud}");
-                }
-            }
-        }
+        // --- MÉTODOS DE CONSOLA (Los dejamos por si acaso) ---
+        public void VerPendientes() { }
+        public void VerHistorial() { }
     }
 }
