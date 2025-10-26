@@ -1,29 +1,25 @@
-﻿using System;
+using System; // Importa tipos de sistema esenciales.
 
-// 1. ¡Importante! Usamos el namespace de nuestro proyecto para poder ver
-//    las clases Estudiante y GestionTutorias que creamos.
+// Incluimos el espacio de nombres del proyecto para acceder a nuestras clases.
 namespace CasoWowCentroTutorias
 {
-    class Program
+    class Program // Clase principal de la aplicación de consola.
     {
-        // El "static void Main" es el punto de entrada, aquí comienza todo.
+        // El método Main es el punto de inicio del programa.
         static void Main(string[] args)
         {
-            // 2. Creamos UNA instancia de nuestro gestor.
-            //    Este objeto 'gestor' vivirá mientras el programa se ejecute
-            //    y contendrá nuestras colas e historial.
+            // Crea el objeto que administra las colas y la base de datos de tutorías.
             GestionTutorias gestor = new GestionTutorias();
 
             bool salir = false;
 
-            // 3. Un bucle "while" que mantiene el programa corriendo
-            //    hasta que el usuario elija "5. Salir".
+            // Bucle principal que mantiene la ejecución del menú.
             while (!salir)
             {
-                // Limpiamos la consola para mostrar el menú de forma clara
+                // Borra la pantalla para presentar el menú limpio.
                 Console.Clear();
                 Console.WriteLine("==================================================");
-                Console.WriteLine("  Sistema de Control de Atenciones - Centro UPN   ");
+                Console.WriteLine("  Sistema de Control de Atenciones - Centro UPN    ");
                 Console.WriteLine("==================================================");
                 Console.WriteLine("Seleccione una opción:");
                 Console.WriteLine("1. Registrar Estudiante");
@@ -35,54 +31,52 @@ namespace CasoWowCentroTutorias
 
                 string opcion = Console.ReadLine();
 
-                // 4. Un "switch" para manejar la opción del usuario
+                // Evalúa la opción ingresada por el usuario.
                 switch (opcion)
                 {
                     case "1":
-                        RegistrarNuevoEstudiante(gestor);
+                        RegistrarNuevoEstudiante(gestor); // Llama a la función para ingresar datos de un estudiante.
                         break;
                     case "2":
-                        // ¡¡CAMBIO AQUÍ!!
-                        // Ahora capturamos el 'string' que devuelve el método
+                        // Llama al método para atender al siguiente y captura el mensaje de resultado.
                         string mensaje = gestor.AtenderSiguienteEstudiante();
-                        Console.WriteLine(mensaje); // Y lo imprimimos
+                        Console.WriteLine(mensaje); // Muestra el mensaje de estudiante atendido.
                         break;
                     case "3":
-                        gestor.VerPendientes(); // Esta línea da error si el método no existe
+                        gestor.VerPendientes(); // Llama al método para mostrar las colas de espera.
                         break;
                     case "4":
-                        gestor.VerHistorial(); // Esta línea da error si el método no existe
+                        gestor.VerHistorial(); // Llama al método para mostrar el historial de atenciones.
                         break;
                     case "5":
-                        salir = true;
+                        salir = true; // Establece la bandera de salida para terminar el bucle.
                         Console.WriteLine("\nSaliendo del sistema...");
                         break;
                     default:
-                        Console.WriteLine("\nOpción no válida. Intente de nuevo.");
+                        Console.WriteLine("\nOpción no válida. Intente de nuevo."); // Maneja opciones incorrectas.
                         break;
                 }
 
                 if (!salir)
                 {
                     Console.WriteLine("\nPresione Enter para continuar...");
-                    Console.ReadLine(); // Pausa para que el usuario pueda leer
+                    Console.ReadLine(); // Pausa la ejecución para lectura del usuario.
                 }
             }
         }
 
-        // 5. Creamos una función separada para registrar,
-        //    así mantenemos el menú principal limpio.
+        // Función auxiliar para solicitar y registrar los datos del nuevo estudiante.
         static void RegistrarNuevoEstudiante(GestionTutorias gestor)
         {
             Console.WriteLine("\n--- Nuevo Registro ---");
             Console.Write("Nombre del estudiante: ");
-            string nombre = Console.ReadLine();
+            string nombre = Console.ReadLine(); // Lee el nombre.
 
             Console.Write("Asignatura: ");
-            string asignatura = Console.ReadLine();
+            string asignatura = Console.ReadLine(); // Lee la asignatura.
 
             string tipoSolicitud = "";
-            while (tipoSolicitud != "1" && tipoSolicitud != "2")
+            while (tipoSolicitud != "1" && tipoSolicitud != "2") // Bucle de validación para el tipo de solicitud.
             {
                 Console.Write("Tipo (1=Prioritaria, 2=Regular): ");
                 tipoSolicitud = Console.ReadLine();
@@ -92,10 +86,10 @@ namespace CasoWowCentroTutorias
                 }
             }
 
-            // Convertimos el "1" o "2" al texto que espera nuestro gestor
+            // Convierte la opción numérica del usuario al formato de texto esperado por el gestor.
             string tipoFinal = (tipoSolicitud == "1") ? "prioritaria" : "regular";
 
-            gestor.RegistrarEstudiante(nombre, asignatura, tipoFinal);
+            gestor.RegistrarEstudiante(nombre, asignatura, tipoFinal); // Llama al método del gestor para guardar el nuevo registro.
         }
     }
 }
