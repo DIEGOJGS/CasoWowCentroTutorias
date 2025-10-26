@@ -115,39 +115,6 @@ namespace CasoWow.AppVisual // Define el namespace de la aplicación visual.
             }
         }
 
-        private void lstColaPrioritaria_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            // Método vacío: no implementa lógica al seleccionar un elemento de la lista.
-        }
 
-        private void label9_Click(object sender, EventArgs e)
-        {
-            // Método vacío.
-        }
-
-        private void label6_Click(object sender, EventArgs e)
-        {
-            // Método vacío.
-        }
-
-        private void label2_Click(object sender, EventArgs e)
-        {
-            // Método vacío.
-        }
-
-        private void label7_Click(object sender, EventArgs e)
-        {
-            // Método vacío.
-        }
-
-        private void label8_Click(object sender, EventArgs e)
-        {
-            // Método vacío.
-        }
-
-        private void MainForm_Load(object sender, EventArgs e)
-        {
-            // Método vacío: código que se ejecutaría al cargar la ventana.
-        }
     }
 }
