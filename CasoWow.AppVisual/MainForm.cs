@@ -114,7 +114,40 @@ namespace CasoWow.AppVisual // Define el namespace de la aplicación visual.
                 }
             }
         }
+        private void lstColaPrioritaria_SelectedIndexChanged(object sender, EventArgs e)
+        {
 
+        }
+
+        private void label9_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label6_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label7_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label8_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+
+        }
 
     }
 }
